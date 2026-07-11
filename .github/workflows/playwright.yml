@@ -1,0 +1,44 @@
+name: Playwright Automation CI
+
+on:
+  push:
+    branches:
+      - develop
+      - feature/**
+    paths:
+      - 'app/**'
+
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - 'app/**'
+
+jobs:
+  playwright-tests:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Python Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r automation/requirements.txt
+
+      - name: Install Playwright Browsers
+        run: |
+          playwright install chromium
+
+      - name: Run Playwright Tests
+        working-directory: automation
+        run: |
+          pytest tests -v
