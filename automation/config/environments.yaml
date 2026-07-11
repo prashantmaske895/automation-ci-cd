@@ -1,0 +1,38 @@
+# =========================================================================
+# Environment Configuration
+# Add as many environments as you need. Switch between them using the
+# ENV environment variable, e.g.:
+#     ENV=qa pytest
+#     ENV=staging pytest
+# Defaults to "qa" if ENV is not set (see utils/config_reader.py)
+# =========================================================================
+
+qa:
+  base_url: "https://www.saucedemo.com"
+  browser: "chromium"          # chromium | firefox | webkit
+  headless: true
+  timeout_ms: 30000
+  viewport:
+    width: 1366
+    height: 768
+  storage_state_path: "auth/qa_state.json"
+
+staging:
+  base_url: "https://www.saucedemo.com"
+  browser: "chromium"
+  headless: true
+  timeout_ms: 30000
+  viewport:
+    width: 1366
+    height: 768
+  storage_state_path: "auth/staging_state.json"
+
+prod:
+  base_url: "https://www.saucedemo.com"
+  browser: "chromium"
+  headless: true
+  timeout_ms: 45000
+  viewport:
+    width: 1920
+    height: 1080
+  storage_state_path: "auth/prod_state.json"

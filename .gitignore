@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual Environments
+venv/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Pytest
+.pytest_cache/
+
+# Reports
+automation/reports/
+automation/playwright-report/
+automation/test-results/
+
+# Authentication
+automation/auth/*.json
+
+# Build
+*.egg-info/
+
+# macOS
+.DS_Store
