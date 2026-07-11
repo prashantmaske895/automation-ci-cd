@@ -7,12 +7,14 @@ on:
       - feature/**
     paths:
       - 'app/**'
+      - '.github/workflows/**'
 
   pull_request:
     branches:
       - develop
     paths:
       - 'app/**'
+      - '.github/workflows/**'
 
 jobs:
   playwright-tests:
