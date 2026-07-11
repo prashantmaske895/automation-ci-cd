@@ -26,34 +26,21 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Install Python Dependencies
+      - name: Build Docker Image
         run: |
-          pip install --upgrade pip
-          pip install -r automation/requirements.txt
+          docker build -t playwright-framework .
 
-      - name: Install Playwright Browsers
+      - name: Run Playwright Tests in Docker
         run: |
-          playwright install chromium
+          mkdir -p automation/reports
 
-      - name: Run Playwright Tests
-        working-directory: automation
-        run: |
-          mkdir -p reports
-
-          pytest tests -v \
-            --html=reports/report.html \
-            --self-contained-html \
-            --junitxml=reports/results.xml
+          docker run --rm \
+            -v ${{ github.workspace }}/automation/reports:/app/automation/reports \
+            playwright-framework
 
       - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-test-report
-          path: |
-            automation/reports/
+          path: automation/reports/
