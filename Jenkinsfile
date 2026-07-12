@@ -16,33 +16,40 @@ pipeline {
         }
 
         stage('Run Playwright Tests') {
-            steps {
-                sh '''
-                mkdir -p automation/reports
+    steps {
+        sh '''
+        mkdir -p automation/reports
 
-                docker run --rm \
-                  -v $WORKSPACE/automation/reports:/app/automation/reports \
-                  playwright-framework
-                '''
-            }
-        }
+        docker run --rm \
+          -v ${WORKSPACE}/automation/reports:/app/automation/reports \
+          playwright-framework
+
+        echo "===== Jenkins Workspace ====="
+        pwd
+
+        echo "===== Reports Directory ====="
+        ls -la automation/reports || true
+
+        echo "===== Find Reports ====="
+        find . -name "*.html"
+        find . -name "*.xml"
+        '''
+    }
+}
     }
 
     post {
-
-        always {
-
-            archiveArtifacts artifacts: 'automation/reports/**', fingerprint: true
-
-            junit 'automation/reports/results.xml'
-        }
-
-        success {
-            echo 'Playwright tests completed successfully.'
-        }
-
-        failure {
-            echo 'Pipeline failed.'
-        }
+    always {
+        archiveArtifacts artifacts: 'automation/reports/**', allowEmptyArchive: true
+        junit testResults: 'automation/reports/results.xml', allowEmptyResults: true
     }
+
+    success {
+        echo 'Playwright tests completed successfully.'
+    }
+
+    failure {
+        echo 'Pipeline failed.'
+    }
+}
 }
