@@ -18,8 +18,14 @@ Flow:
 This is what "Login Once, Reuse Login, Storage State, Cookies, Session"
 means in practice.
 """
+# -*- coding: utf-8 -*-
+
+"""
+Creates storage_state once and reuses it.
+No nested sync_playwright() calls.
+"""
+
 import os
-from playwright.sync_api import sync_playwright
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -28,45 +34,40 @@ VALID_USER = "standard_user"
 VALID_PASSWORD = "secret_sauce"
 
 
-def ensure_logged_in(config: dict, force_relogin: bool = False) -> str:
-    """
-    Ensures a valid storage_state file exists for this environment.
-    Returns the path to the storage_state JSON file.
-    """
+def ensure_logged_in(browser, config, force_relogin=False):
     state_path = config["storage_state_path"]
 
     if os.path.exists(state_path) and not force_relogin:
-        logger.info(f"Reusing existing session/storage state: {state_path}")
+        logger.info(f"Using existing storage state: {state_path}")
         return state_path
 
-    logger.info("No saved session found - logging in once via the UI...")
+    logger.info("No session found. Logging in once...")
+
     os.makedirs(os.path.dirname(state_path), exist_ok=True)
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=config.get("headless", True))
-        context = browser.new_context()
-        page = context.new_page()
+    context = browser.new_context()
+    page = context.new_page()
 
-        page.goto(config["base_url"])
-        page.locator("#user-name").fill(VALID_USER)
-        page.locator("#password").fill(VALID_PASSWORD)
-        page.locator("#login-button").click()
+    page.goto(config["base_url"])
 
-        # Confirm login succeeded before saving state
-        page.wait_for_selector(".inventory_list", timeout=config.get("timeout_ms", 30000))
+    page.locator("#user-name").fill(VALID_USER)
+    page.locator("#password").fill(VALID_PASSWORD)
+    page.locator("#login-button").click()
 
-        # This is the key step: dump cookies + localStorage to disk
-        context.storage_state(path=state_path)
-        logger.info(f"Session saved to: {state_path}")
+    page.wait_for_selector(".inventory_list")
 
-        browser.close()
+    context.storage_state(path=state_path)
+
+    logger.info(f"Storage state created at {state_path}")
+
+    context.close()
 
     return state_path
 
 
-def clear_saved_session(config: dict):
-    """Deletes the saved storage_state file, forcing a fresh login next run."""
+def clear_saved_session(config):
     state_path = config["storage_state_path"]
+
     if os.path.exists(state_path):
         os.remove(state_path)
-        logger.info(f"Cleared saved session: {state_path}")
+        logger.info("Old session removed")

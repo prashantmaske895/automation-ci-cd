@@ -1,0 +1,46 @@
+name: Playwright Automation CI
+
+on:
+  push:
+    branches:
+      - develop
+      - feature/**
+    paths:
+      - 'app/**'
+      - '.github/workflows/**'
+
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - 'app/**'
+      - '.github/workflows/**'
+
+jobs:
+  playwright-tests:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          docker build -t playwright-framework .
+
+      - name: Run Playwright Tests in Docker
+        run: |
+          mkdir -p automation/reports
+
+          docker run --rm \
+            -v ${{ github.workspace }}/automation/reports:/app/automation/reports \
+            playwright-framework
+
+      - name: Upload Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-report
+          path: automation/reports/
